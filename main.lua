@@ -55,13 +55,14 @@ function love.load()
   player.y = (600 / 2) - (player.radius / 2)
   player.speed = 2
   player.health = 5
-  player.score = 0
+  player.ability = false
   -- enemy
   enemies = {}
   enemy_speed = 0.7
   enemy_hispeed = 1.4
   enemy_image = love.graphics.newImage("graphics/enemy.png")
-  enemy_count = 3
+  enemy_count = 1
+  enemy_w = 36
   for i=1, enemy_count do
     enemies[i] = {}
     enemies[i].x = math.random(10, stage.width - 10)
@@ -87,6 +88,10 @@ function love.update(dt)
   collide_enemy_shell()
   player_walk()
   enemies_walk()
+
+  if enemy_count == 0 then
+    print("you win")
+  end
 end
 
 function love.draw()
@@ -108,6 +113,28 @@ function spawn_enemy()
   enemies[enemy_count].x = math.random(10, stage.width - 10)
   enemies[enemy_count].y = math.random(10, stage.height - 10)
   enemies[enemy_count].speed = enemy_speed
+end
+
+function collide_enemy_player(k, v)
+  local temp_p = { player.x, player.y }
+  local temp_e = { v.x, v.y }
+  if distance(temp_p, temp_e) < enemy_w/ 2 then
+    if player_kills_enemy() then
+      table.remove(enemies, k)
+      enemy_count = enemy_count - 1
+    else
+      print("game over")
+    end
+  end
+end
+
+function player_kills_enemy()
+  if player.ability == true then
+    player.ability = false
+    return true
+  else
+    return false
+  end
 end
 
 function collide_enemy_shell()
@@ -132,7 +159,7 @@ function collide_player_shell()
     if distance(temp_p, temp_s) < shell.w then
       shell.active = false
       shell.start_time = love.timer.getTime()
-      player.score = player.score + 1
+      player.ability = true
     end
   else
     shell.delta_time = love.timer.getTime()
@@ -215,6 +242,8 @@ function enemies_walk()
       v.y = v.y + (1 * v.speed)
     end
 
+    collide_enemy_player(k, v)
+
   end
 end
 
@@ -237,8 +266,9 @@ function draw_shell()
   end
 end
 function draw_score()
-  love.graphics.print("you collected: " ..player.score , 10, 10)
-  love.graphics.print("enemy collected: " ..enemy_count , 10, 30)
+  love.graphics.print("evil octo count: " ..enemy_count , 10, 10)
+  local s = player.ability and "true" or "false"
+  love.graphics.print("octo kill ability: " ..s , 10, 30)
 end
 function draw_enemies()
   for k,v in pairs(enemies) do
