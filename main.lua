@@ -55,6 +55,7 @@ function love.load()
   player.y = (600 / 2) - (player.radius / 2)
   player.speed = 2
   player.health = 5
+  player.score = 0
   -- enemy
   enemies = {}
   enemy_speed = .5
@@ -69,24 +70,62 @@ function love.load()
   shell = {}
   shell.image = love.graphics.newImage("graphics/shell.png")
   shell.active = true
-  shell.time_till_respawn = 2000
+  shell.start_time = 0
+  shell.delta_time = 0
+  shell.time_till_respawn = 2
   shell.x = math.random(10, stage.width - 10)
   shell.y = math.random(10, stage.height - 10)
+  shell.r = math.random(0, 360)
+  shell.w = 36
 end
 
 function love.update(dt)
   --if gameIsPaused then return end
+  update_shell()
   player_walk()
   --enemies_walk()
 end
 
 function love.draw()
   draw_map()
-  draw_player()
   draw_shell()
+  draw_score()
+  draw_player()
   --for k,v in pairs(enemies) do
     --love.graphics.rectangle("fill", v.x, v.y, 20, 20)
   --end
+end
+
+-- basic "collision" detection
+-- pass in tables with coordinates
+function distance(pt1, pt2)
+  return math.sqrt((pt1[1] - pt2[1]) ^ 2 + (pt1[2] - pt2[2]) ^2)
+end
+
+function spawn_shell()
+  shell.x = math.random(10, stage.width - 10)
+  shell.y = math.random(10, stage.height - 10)
+  shell.r = math.random(0, 360)
+end
+
+function update_shell()
+  if shell.active == true then
+    temp_p = { player.x, player.y }
+    temp_s = { shell.x, shell.y }
+    --print(distance(temp_p, temp_s))
+    if distance(temp_p, temp_s) < shell.w then
+      shell.active = false
+      shell.start_time = love.timer.getTime()
+      player.score = player.score + 1
+    end
+  else
+    shell.delta_time = love.timer.getTime()
+    print(shell.delta_time - shell.start_time)
+    if shell.delta_time - shell.start_time >= shell.time_till_respawn then
+      spawn_shell()
+      shell.active = true
+    end
+  end
 end
 
 function player_walk()
@@ -160,13 +199,17 @@ function draw_map()
       end
    end
 end
-
 function draw_player()
   love.graphics.circle('fill', player.x, player.y, player.radius, 100 )
 end
-
 function draw_shell()
-  love.graphics.draw(shell.image, shell.x, shell.y)
+  if shell.active == true then
+    love.graphics.draw(shell.image, shell.x, shell.y, shell.r)
+  end
+end
+
+function draw_score()
+  love.graphics.print("shells collected: " ..player.score , 10, 10)
 end
 
 -- pause game if focus is lost
