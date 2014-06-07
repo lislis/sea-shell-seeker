@@ -83,7 +83,7 @@ function love.update(dt)
   --if gameIsPaused then return end
   update_shell()
   player_walk()
-  --enemies_walk()
+  enemies_walk()
 end
 
 function love.draw()
@@ -91,9 +91,9 @@ function love.draw()
   draw_shell()
   draw_score()
   draw_player()
-  --for k,v in pairs(enemies) do
-    --love.graphics.rectangle("fill", v.x, v.y, 20, 20)
-  --end
+  for k,v in pairs(enemies) do
+    love.graphics.rectangle("fill", v.x, v.y, 20, 20)
+  end
 end
 
 -- basic "collision" detection
@@ -112,7 +112,6 @@ function update_shell()
   if shell.active == true then
     temp_p = { player.x, player.y }
     temp_s = { shell.x, shell.y }
-    --print(distance(temp_p, temp_s))
     if distance(temp_p, temp_s) < shell.w then
       shell.active = false
       shell.start_time = love.timer.getTime()
@@ -120,7 +119,6 @@ function update_shell()
     end
   else
     shell.delta_time = love.timer.getTime()
-    print(shell.delta_time - shell.start_time)
     if shell.delta_time - shell.start_time >= shell.time_till_respawn then
       spawn_shell()
       shell.active = true
