@@ -12,6 +12,7 @@ function love.load()
 
   font = love.graphics.newFont('font/HOLY-RAV.ttf', 40)
   love.graphics.setFont(font)
+  sandcastle = love.graphics.newImage( "graphics/sandcastle.png" )
 
   -- our tiles
   tile = {}
@@ -63,12 +64,12 @@ function love.load()
   player.radius = 15
   player.x = (800 / 2) - (player.radius / 2)
   player.y = (600 / 2) - (player.radius / 2)
-  player.speed = 2
+  player.speed = 2.3
   player.health = 5
   player.ability = false
   -- enemy
   enemies = {}
-  enemy_speed = 0.7
+  enemy_speed = 0.8
   enemy_hispeed = 1.4
   enemy_image = love.graphics.newImage("graphics/enemy.png")
   enemy_count = 1
@@ -190,7 +191,7 @@ end
 function collide_enemy_player(k, v)
   local temp_p = { player.x, player.y }
   local temp_e = { v.x, v.y }
-  if distance(temp_p, temp_e) < enemy_w/ 2 then
+  if distance(temp_p, temp_e) < enemy_w then
     if player_kills_enemy() then
       table.remove(enemies, k)
       enemy_count = enemy_count - 1
@@ -330,6 +331,7 @@ function draw_map()
    end
 end
 function draw_player()
+  love.graphics.setColor(0,0,0)
   love.graphics.circle('fill', player.x, player.y, player.radius, 100 )
 end
 function draw_shell()
@@ -367,6 +369,7 @@ end
 
 function draw_win()
   love.graphics.print("you win" , 50, 50)
+  love.graphics.draw(sandcastle, 0, 480)
   draw_credit_button()
 end
 
