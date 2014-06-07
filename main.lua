@@ -62,7 +62,8 @@ function love.load()
   enemy_hispeed = 1.4
   enemy_score = 0
   enemy_image = love.graphics.newImage("graphics/enemy.png")
-  for i=1,3 do
+  enemy_count = 3
+  for i=1, enemy_count do
     enemies[i] = {}
     enemies[i].x = math.random(10, stage.width - 10)
     enemies[i].y = math.random(10, stage.height - 10)
@@ -103,6 +104,13 @@ function distance(pt1, pt2)
   return math.sqrt((pt1[1] - pt2[1]) ^ 2 + (pt1[2] - pt2[2]) ^2)
 end
 
+function spawn_enemy()
+  enemies[enemy_count] = {}
+  enemies[enemy_count].x = math.random(10, stage.width - 10)
+  enemies[enemy_count].y = math.random(10, stage.height - 10)
+  enemies[enemy_count].speed = enemy_speed
+end
+
 function collide_enemy_shell()
   if shell.active == true then
     local temp_s = { shell.x, shell.y }
@@ -111,7 +119,8 @@ function collide_enemy_shell()
       if distance(temp_s, temp_e) < shell.w then
         shell.active = false
         shell.start_time = love.timer.getTime()
-        enemy_score = enemy_score + 1
+        enemy_count = enemy_count + 1
+        spawn_enemy()
       end
     end
   end
