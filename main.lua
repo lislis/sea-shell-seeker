@@ -103,12 +103,6 @@ function distance(pt1, pt2)
   return math.sqrt((pt1[1] - pt2[1]) ^ 2 + (pt1[2] - pt2[2]) ^2)
 end
 
-function spawn_shell()
-  shell.x = math.random(10, stage.width - 10)
-  shell.y = math.random(10, stage.height - 10)
-  shell.r = math.random(0, 360)
-end
-
 function collide_enemy_shell()
   if shell.active == true then
     local temp_s = { shell.x, shell.y }
@@ -166,75 +160,53 @@ function player_walk()
   end
 end
 
+function collide_enemy_enemy()
+  print("collide!")
+end
+
+function enemy_target()
+  if shell.active == true then
+    return shell
+  else
+    return player
+  end
+end
+
 function enemies_walk()
+  local target = enemy_target()
   
   for k,v in pairs(enemies) do
-    local enemy_set_highspeed = math.random(10, 50)
-    if shell.active == true then
-      if v.x > shell.x then
-        if v.x - shell.x < enemy_set_highspeed then
-          v.speed = enemy_hispeed
-        else
-          v.speed = enemy_speed
-        end
-        v.x = v.x + (-1 * v.speed)
-      elseif v.x < shell.x then
-        if shell.x - v.x < enemy_set_highspeed then
-          v.speed = enemy_hispeed
-        else
-          v.speed = enemy_speed
-        end
-        v.x = v.x + (1 * v.speed)
-      end
-
-      if v.y > shell.y then
-        if v.y - shell.y < enemy_set_highspeed then
-          v.speed = enemy_hispeed
-        else
-          v.speed = enemy_speed
-        end
-        v.y = v.y + (-1 * v.speed)
-      elseif v.y < shell.y then
-        if shell.y - v.y < enemy_set_highspeed then
-          v.speed = enemy_hispeed
-        else
-          v.speed = enemy_speed
-        end
-        v.y = v.y + (1 * v.speed)
-      end
+    -- set range in which enemies accelerate
+    local highspeed_range = math.random(10, 50)
+    -- implement acceleration
+    if v.x - target.x < highspeed_range then
+      v.speed = enemy_hispeed
     else
-      if v.x > player.x then
-        if v.x - player.x < enemy_set_highspeed then
-          v.speed = enemy_hispeed
-        else
-          v.speed = enemy_speed
-        end
-        v.x = v.x + (-1 * v.speed)
-      elseif v.x < player.x then
-        if player.x - v.x < enemy_set_highspeed then
-          v.speed = enemy_hispeed
-        else
-          v.speed = enemy_speed
-        end
-        v.x = v.x + (1 * v.speed)
-      end
-
-      if v.y > player.y then
-        if v.y - player.y < enemy_set_highspeed then
-          v.speed = enemy_hispeed
-        else
-          v.speed = enemy_speed
-        end
-        v.y = v.y + (-1 * v.speed)
-      elseif v.y < player.y then
-        if player.y - v.y < enemy_set_highspeed then
-          v.speed = enemy_hispeed
-        else
-          v.speed = enemy_speed
-        end
-        v.y = v.y + (1 * v.speed)
-      end
+      v.speed = enemy_speed
     end
+    if v.y - target.y < highspeed_range then
+      v.speed = enemy_hispeed
+    else
+      v.speed = enemy_speed
+    end
+
+    if v.x > target.x then
+      v.x = v.x + (-1 * v.speed)
+    elseif v.x < target.x then
+      v.x = v.x + (1 * v.speed)
+    end
+
+    if v.y > target.y then
+      v.y = v.y + (-1 * v.speed)
+    elseif v.y < target.y then
+      if target.y - v.y < highspeed_range then
+        v.speed = enemy_hispeed
+      else
+        v.speed = enemy_speed
+      end
+      v.y = v.y + (1 * v.speed)
+    end
+
   end
 end
 
@@ -260,11 +232,15 @@ function draw_score()
   love.graphics.print("you collected: " ..player.score , 10, 10)
   love.graphics.print("enemy collected: " ..enemy_score , 10, 30)
 end
-
 function draw_enemies()
   for k,v in pairs(enemies) do
     love.graphics.draw(enemy_image, v.x, v.y)
   end
+end
+function spawn_shell()
+  shell.x = math.random(10, stage.width - 10)
+  shell.y = math.random(10, stage.height - 10)
+  shell.r = math.random(0, 360)
 end
 
 -- pause game if focus is lost
