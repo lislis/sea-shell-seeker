@@ -60,7 +60,6 @@ function love.load()
   enemies = {}
   enemy_speed = 0.7
   enemy_hispeed = 1.4
-  enemy_score = 0
   enemy_image = love.graphics.newImage("graphics/enemy.png")
   enemy_count = 3
   for i=1, enemy_count do
@@ -239,7 +238,7 @@ function draw_shell()
 end
 function draw_score()
   love.graphics.print("you collected: " ..player.score , 10, 10)
-  love.graphics.print("enemy collected: " ..enemy_score , 10, 30)
+  love.graphics.print("enemy collected: " ..enemy_count , 10, 30)
 end
 function draw_enemies()
   for k,v in pairs(enemies) do
