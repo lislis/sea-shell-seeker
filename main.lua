@@ -67,6 +67,7 @@ function love.load()
   end
   -- shell
   shell = {}
+  shell.image = love.graphics.newImage("graphics/shell.png")
   shell.active = true
   shell.time_till_respawn = 2000
   shell.x = math.random(10, stage.width - 10)
@@ -165,7 +166,7 @@ function draw_player()
 end
 
 function draw_shell()
-  love.graphics.draw()
+  love.graphics.draw(shell.image, shell.x, shell.y)
 end
 
 -- pause game if focus is lost
