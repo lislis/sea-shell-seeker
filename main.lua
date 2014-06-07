@@ -1,8 +1,18 @@
 -- Sea Shell Seeking
 
+require "lib/menu"
+
+game_states = {'start', 'main', 'win', 'lose', 'credits'}
+
+default_state = 'start'
+
+current_state = default_state
+
 function love.load()
 
-  love.graphics.setNewFont(14)
+  font = love.graphics.newFont('font/HOLY-RAV.ttf', 40)
+  love.graphics.setFont(font)
+
   -- our tiles
   tile = {}
   for i=1,3 do -- change 3 to the number of tile images minus 1.
@@ -80,26 +90,88 @@ function love.load()
   shell.y = math.random(10, stage.height - 10)
   shell.r = math.random(0, 360)
   shell.w = 36
+
+  -- menu
+  spawn_button(50, 150, 'Start', 'start')
+  spawn_button(50, 190, 'Credits', 'credits')
+  spawn_button(50, 230, 'Exit', 'exit')
+
+
 end
 
 function love.update(dt)
-  --if gameIsPaused then return end
-  collide_player_shell()
-  collide_enemy_shell()
-  player_walk()
-  enemies_walk()
 
-  if enemy_count == 0 then
-    print("you win")
+  if current_state == 'main' then
+    collide_player_shell()
+    collide_enemy_shell()
+    player_walk()
+    enemies_walk()
+
+    if enemy_count == 0 then
+      current_state = 'win'
+    end
   end
+  
+  if current_state == 'start' or
+  current_state == 'win' then
+    enemy_count = 1
+    for i=1, enemy_count do
+      enemies[i] = {}
+      enemies[i].x = math.random(10, stage.width - 10)
+      enemies[i].y = math.random(10, stage.height - 10)
+      enemies[i].speed = enemy_speed
+    end
+  end
+
+  if current_state == 'start' then
+    enemies = {}
+    enemy_count = 1
+    for i=1, enemy_count do
+      enemies[i] = {}
+      enemies[i].x = math.random(10, stage.width - 10)
+      enemies[i].y = math.random(10, stage.height - 10)
+      enemies[i].speed = enemy_speed
+    end
+  end
+
 end
 
 function love.draw()
-  draw_map()
-  draw_shell()
-  draw_score()
-  draw_enemies()
-  draw_player()
+  if current_state == 'main' then
+    love.graphics.setColor(255,255,255)
+    draw_map()
+    draw_shell()
+    draw_score()
+    draw_enemies()
+    draw_player()
+  elseif current_state == 'start' then
+    love.graphics.setColor(247, 250, 184)
+    draw_start()
+    draw_button()
+  elseif current_state == 'win' then
+    love.graphics.setColor(247, 250, 184)
+    draw_win()
+  elseif current_state == 'lose' then
+    love.graphics.setColor(247, 250, 184)
+    draw_lose()
+  elseif current_state == 'credits' then
+    love.graphics.setColor(247, 250, 184)
+    draw_credits()
+  end
+end
+
+function love.mousepressed(x, y)
+  if current_state == 'start' then
+    click_button(x, y)
+  elseif current_state == 'credits' or 
+    current_state == 'win' or
+    current_state == 'lose' then
+    click_credit_button(x, y)
+  end
+end
+
+function new_game()
+  -- body
 end
 
 -- basic "collision" detection
@@ -123,7 +195,7 @@ function collide_enemy_player(k, v)
       table.remove(enemies, k)
       enemy_count = enemy_count - 1
     else
-      print("game over")
+      current_state = 'lose'
     end
   end
 end
@@ -266,9 +338,10 @@ function draw_shell()
   end
 end
 function draw_score()
-  love.graphics.print("evil octo count: " ..enemy_count , 10, 10)
+  
+  love.graphics.print("octo count: " ..enemy_count , 10, 10)
   local s = player.ability and "true" or "false"
-  love.graphics.print("octo kill ability: " ..s , 10, 30)
+  love.graphics.print("kill: " ..s , 10, 40)
 end
 function draw_enemies()
   for k,v in pairs(enemies) do
@@ -286,4 +359,27 @@ end
 
 function love.quit()
   print("Thanks for playing! Come back soon!")
+end
+
+function draw_start()
+  love.graphics.print("Sea Shell Seeker" , 50, 50)
+end
+
+function draw_win()
+  love.graphics.print("you win" , 50, 50)
+  draw_credit_button()
+end
+
+function draw_lose()
+  love.graphics.print("you lose", 50, 50)
+  love.graphics.print("overrun by " ..enemy_count.." octos" , 50, 90)
+  draw_credit_button()
+end
+
+function draw_credits()
+  love.graphics.print("Made at", 50, 50)
+  love.graphics.print("the BerlinMiniJam", 50, 90)
+  love.graphics.print("June 2014", 50, 130)
+  love.graphics.print("by Lisa", 50, 170)
+  draw_credit_button()
 end
