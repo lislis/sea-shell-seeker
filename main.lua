@@ -58,8 +58,10 @@ function love.load()
   player.score = 0
   -- enemy
   enemies = {}
-  enemy_speed = .5
-  enemy_hispeed = 3
+  enemy_speed = 0.7
+  enemy_hispeed = 1.4
+  enemy_score = 0
+  enemy_image = love.graphics.newImage("graphics/enemy.png")
   for i=1,3 do
     enemies[i] = {}
     enemies[i].x = math.random(10, stage.width - 10)
@@ -81,7 +83,8 @@ end
 
 function love.update(dt)
   --if gameIsPaused then return end
-  update_shell()
+  collide_player_shell()
+  collide_enemy_shell()
   player_walk()
   enemies_walk()
 end
@@ -90,10 +93,8 @@ function love.draw()
   draw_map()
   draw_shell()
   draw_score()
+  draw_enemies()
   draw_player()
-  for k,v in pairs(enemies) do
-    love.graphics.rectangle("fill", v.x, v.y, 20, 20)
-  end
 end
 
 -- basic "collision" detection
@@ -108,10 +109,24 @@ function spawn_shell()
   shell.r = math.random(0, 360)
 end
 
-function update_shell()
+function collide_enemy_shell()
   if shell.active == true then
-    temp_p = { player.x, player.y }
-    temp_s = { shell.x, shell.y }
+    local temp_s = { shell.x, shell.y }
+    for k,v in pairs(enemies) do
+      local temp_e = { v.x, v.y }
+      if distance(temp_s, temp_e) < shell.w then
+        shell.active = false
+        shell.start_time = love.timer.getTime()
+        enemy_score = enemy_score + 1
+      end
+    end
+  end
+end
+
+function collide_player_shell()
+  if shell.active == true then
+    local temp_p = { player.x, player.y }
+    local temp_s = { shell.x, shell.y }
     if distance(temp_p, temp_s) < shell.w then
       shell.active = false
       shell.start_time = love.timer.getTime()
@@ -152,37 +167,73 @@ function player_walk()
 end
 
 function enemies_walk()
+  
   for k,v in pairs(enemies) do
-    if v.x > player.x then
-      if v.x - player.x < 10 then
-        v.speed = enemy_hispeed
-      else
-        v.speed = enemy_speed
+    local enemy_set_highspeed = math.random(10, 50)
+    if shell.active == true then
+      if v.x > shell.x then
+        if v.x - shell.x < enemy_set_highspeed then
+          v.speed = enemy_hispeed
+        else
+          v.speed = enemy_speed
+        end
+        v.x = v.x + (-1 * v.speed)
+      elseif v.x < shell.x then
+        if shell.x - v.x < enemy_set_highspeed then
+          v.speed = enemy_hispeed
+        else
+          v.speed = enemy_speed
+        end
+        v.x = v.x + (1 * v.speed)
       end
-      v.x = v.x + (-1 * v.speed)
-    elseif v.x < player.x then
-      if player.x - v.x < 10 then
-        v.speed = enemy_hispeed
-      else
-        v.speed = enemy_speed
-      end
-      v.x = v.x + (1 * v.speed)
-    end
 
-    if v.y > player.y then
-      if v.y - player.y < 10 then
-        v.speed = enemy_hispeed
-      else
-        v.speed = enemy_speed
+      if v.y > shell.y then
+        if v.y - shell.y < enemy_set_highspeed then
+          v.speed = enemy_hispeed
+        else
+          v.speed = enemy_speed
+        end
+        v.y = v.y + (-1 * v.speed)
+      elseif v.y < shell.y then
+        if shell.y - v.y < enemy_set_highspeed then
+          v.speed = enemy_hispeed
+        else
+          v.speed = enemy_speed
+        end
+        v.y = v.y + (1 * v.speed)
       end
-      v.y = v.y + (-1 * v.speed)
-    elseif v.y < player.y then
-      if player.y - v.y < 10 then
-        v.speed = enemy_hispeed
-      else
-        v.speed = enemy_speed
+    else
+      if v.x > player.x then
+        if v.x - player.x < enemy_set_highspeed then
+          v.speed = enemy_hispeed
+        else
+          v.speed = enemy_speed
+        end
+        v.x = v.x + (-1 * v.speed)
+      elseif v.x < player.x then
+        if player.x - v.x < enemy_set_highspeed then
+          v.speed = enemy_hispeed
+        else
+          v.speed = enemy_speed
+        end
+        v.x = v.x + (1 * v.speed)
       end
-      v.y = v.y + (1 * v.speed)
+
+      if v.y > player.y then
+        if v.y - player.y < enemy_set_highspeed then
+          v.speed = enemy_hispeed
+        else
+          v.speed = enemy_speed
+        end
+        v.y = v.y + (-1 * v.speed)
+      elseif v.y < player.y then
+        if player.y - v.y < enemy_set_highspeed then
+          v.speed = enemy_hispeed
+        else
+          v.speed = enemy_speed
+        end
+        v.y = v.y + (1 * v.speed)
+      end
     end
   end
 end
@@ -205,9 +256,15 @@ function draw_shell()
     love.graphics.draw(shell.image, shell.x, shell.y, shell.r)
   end
 end
-
 function draw_score()
-  love.graphics.print("shells collected: " ..player.score , 10, 10)
+  love.graphics.print("you collected: " ..player.score , 10, 10)
+  love.graphics.print("enemy collected: " ..enemy_score , 10, 30)
+end
+
+function draw_enemies()
+  for k,v in pairs(enemies) do
+    love.graphics.draw(enemy_image, v.x, v.y)
+  end
 end
 
 -- pause game if focus is lost
